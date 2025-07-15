@@ -1,0 +1,19 @@
+{
+  "configurations": [
+    {
+      "name": "Windows-UCRT64",
+      "includePath": [
+        "${workspaceFolder}/**",
+        "C:/SDL3-3.2.16/x86_64-w64-mingw32/include",
+        "C:/SDL3_image-3.2.4/x86_64-w64-mingw32/include",
+        "C:/msys64/ucrt64/include"
+      ],
+      "defines": [],
+      "compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
+      "cStandard": "c17",
+      "cppStandard": "c++17",
+      "intelliSenseMode": "windows-gcc-x64"
+    }
+  ],
+  "version": 4
+}
