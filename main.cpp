@@ -114,9 +114,8 @@ protected:
 
 public:
     virtual void takeDamage(int amount) {
-	hp -= amount;
-	if (hp <= 0)
-	    die();
+		hp -= amount;
+		if (hp <= 0) die();
     }
 private:
 	virtual void die() = 0;
@@ -132,57 +131,42 @@ public:
 	void sety(int valy) { y = valy; }
 	void sethp(int valhp) { hp = valhp; }
 	int gethp() { return hp; }
+};
+
+
+class Bullet : public GameObject, public Triangle {
+public:
+	void spawn(int vx, int vy, int vw, int vh, int vspeed, int vhp, int vdmg) {
+		spriteRect.x = vx; spriteRect.y = vy; spriteRect.w = vw; spriteRect.h = vh; speed = vspeed; hp = vhp; dmg = vdmg;
+	}
+
+	bool isOutBounds() {
+		if(spriteRect.y <= -spriteRect.h) return true;
+		if(spriteRect.y >= Height+spriteRect.h) return true;
+		if(spriteRect.x <= -spriteRect.w) return true;
+		if(spriteRect.x >= Width+spriteRect.w) return true;
+		return false;
+	}
+
+	int getspeed() { return speed; }
+	int gethp() { return hp; }
 
 private:
 	void die() override {
 	}
 };
 
-
-// class Bullet : public GameObject, public Triangle {
-// public:
-//         Bullet() {
-//                 hp = 0;
-//                 x[0] = x;
-//         }
-
-//         void setpos(int valx, int valy) {
-//                 x[0] = valx;
-//                 x[1] = valx;
-//                 x[2] = valx;
-//                 y[0] = valy;
-//                 y[1] = y[0]+size*MapSize;
-//                 y[2] = y[0]+size*MapSize;
-//         }
-
-//         void setsize(int val) {
-//                 size = val;
-//         }
-
-//         void setspeed(int val) {
-//                 speed = val;
-//         }
-
-//         void sethp(int val) {
-//                 hp = val;
-//         }
-
-//         void setdmg(int val) {
-//                 dmg = val;
-//         }
-
-//         int getspeed() {
-//                 return speed;
-//         }
-
-//         int gethp() {
-//                 return hp;
-//         }
-// private:
-//         void die() override {
-//         }
-// };
-
+class Bullet_v1 : public Bullet {
+public:
+	Bullet_v1() {
+		sprite = IMG_LoadTexture(renderer, "Sprites/Bullet_v1.png");
+		SDL_SetTextureScaleMode(sprite, SDL_SCALEMODE_NEAREST);
+		hp = 0;
+		x[0] = 0; y[0] = 0;
+		x[1] = spriteRect.w-1; y[0] = 0;
+		x[2] = spriteRect.w/2; y[1] = spriteRect.h/2;
+	}
+};
 
 class SpaceShip : public GameObject {
 protected:
@@ -197,26 +181,18 @@ public:
 private:
 	int firerate = 1000;
 	int lastshoot = -210000;
-// public:
-//         static constexpr int MaxBullets = 100;
-//         Bullet bullets[MaxBullets];
-
-// public:
-//         void shoot() {
-//                 if (SDL_GetTicks()-lastshoot >= firerate) {
-//                         int i=0;
-//                         while(i<MaxBullets and bullets[i].gethp()!=0)
-//                                 i++;
-//                         if (i<MaxBullets) {
-//                                 bullets[i].setsize(size);
-//                                 bullets[i].setpos(x[0], y[0]-size*MapSize);
-//                                 bullets[i].setspeed(10);
-//                                 bullets[i].sethp(1);
-//                                 bullets[i].setdmg(100);
-//                         }
-//                         lastshoot = SDL_GetTicks();
-//                 }
-//         }
+public:
+	static constexpr int MaxBullets = 50;
+	Bullet_v1 bullets[MaxBullets];
+    void shoot() {
+		if (SDL_GetTicks()-lastshoot >= firerate) {
+			int i=0;
+			while(i<MaxBullets and bullets[i].gethp()!=0) 
+				i++;
+			if (i<MaxBullets) bullets[i].spawn(spriteRect.x+gunx-spriteRect.w/20*6/2, spriteRect.y+guny-spriteRect.h/20*6/2, spriteRect.w/20*6, spriteRect.h/20*6, speed*3, 1, dmg);
+			lastshoot = SDL_GetTicks();
+		}
+	}
 private:
 	void die() override {
 	}
@@ -225,13 +201,14 @@ private:
 class Player : public SpaceShip, public Triangle {
 public:
     Player() {
-		spriteRect.w = 200;
-		spriteRect.h = 200;
+		spriteRect.w = 20*5;
+		spriteRect.h = 20*5;
 		sprite = IMG_LoadTexture(renderer, "Sprites/Fighter_v1.png");
 		SDL_SetTextureScaleMode(sprite, SDL_SCALEMODE_NEAREST);
 		x[0] = spriteRect.w/2; y[0] = 0;
-		x[1] = 0; y[0] = spriteRect.h;
-		x[2] = spriteRect.w; y[1] =spriteRect.h; 
+		x[1] = 0; y[0] = spriteRect.h-1;
+		x[2] = spriteRect.w-1; y[1] = spriteRect.h-1;
+		gunx = spriteRect.w/2; guny = -spriteRect.h/5;
     }
 };
 
@@ -310,9 +287,9 @@ int main() {
 	    return -69;
 
 	Player player;
-	player.spawn(500, 500, 10, 100, 5);
+	player.spawn(500, 500, 15, 100, 5);
 
-	const int W=1,A=2,S=4,D=8;
+	const int W=1,A=2,S=4,D=8,SPC=16;
 	int keysPressed=0, keysCopy;
 	bool running = true;
 	while(running) {
@@ -322,26 +299,19 @@ int main() {
 			if(event.type == SDL_EVENT_QUIT)
 				running = false;
 			if(event.type == SDL_EVENT_KEY_DOWN) {
-				if(event.key.scancode == SDL_SCANCODE_ESCAPE)
-				    running = false;
-				if(event.key.key == SDLK_W && !(keysPressed&W))
-				    keysPressed += W;
-				if(event.key.key == SDLK_A && !(keysPressed&A))
-				    keysPressed += A;
-				if(event.key.key == SDLK_S && !(keysPressed&S))
-				    keysPressed += S;
-				if(event.key.key == SDLK_D && !(keysPressed&D))
-					keysPressed += D;
+				if(event.key.scancode == SDL_SCANCODE_ESCAPE) running = false;
+				else if(event.key.key == SDLK_W && !(keysPressed&W)) keysPressed += W;
+				else if(event.key.key == SDLK_A && !(keysPressed&A)) keysPressed += A;
+				else if(event.key.key == SDLK_S && !(keysPressed&S)) keysPressed += S;
+				else if(event.key.key == SDLK_D && !(keysPressed&D)) keysPressed += D;
+				else if(event.key.key == SDLK_SPACE && !(keysPressed&SPC)) keysPressed += SPC;
 			}
 			if(event.type == SDL_EVENT_KEY_UP) {
-				if(event.key.key == SDLK_W && (keysPressed&W))
-				    keysPressed -= W;
-				if(event.key.key == SDLK_A && (keysPressed&A))
-				    keysPressed -= A;
-				if(event.key.key == SDLK_S && (keysPressed&S))
-				    keysPressed -= S;
-				if(event.key.key == SDLK_D && (keysPressed&D))
-					keysPressed -= D;
+				if(event.key.key == SDLK_W && (keysPressed&W)) keysPressed -= W;
+				else if(event.key.key == SDLK_A && (keysPressed&A)) keysPressed -= A;
+				else if(event.key.key == SDLK_S && (keysPressed&S)) keysPressed -= S;
+				else if(event.key.key == SDLK_D && (keysPressed&D)) keysPressed -= D;
+				else if(event.key.key == SDLK_SPACE && (keysPressed&SPC)) keysPressed -= SPC;
 			}
 		}
 		keysCopy = keysPressed;
@@ -356,7 +326,17 @@ int main() {
 		if((keysCopy&S)==S) player.spriteRect.y += player.getspeed();
 		if((keysCopy&D)==D) player.spriteRect.x += player.getspeed();
 
+		for(int i=0; i<player.MaxBullets; i++)
+			if(player.bullets[i].gethp()) {
+				player.bullets[i].spriteRect.y -= player.bullets[i].getspeed();
+				if(player.bullets[i].isOutBounds()) player.bullets[i].spawn(0, 0, 0, 0, 0, 0, 0);
+			}
+		if((keysCopy&SPC)==SPC) player.shoot();
+
 		SDL_RenderTexture(renderer, player.sprite, NULL, &player.spriteRect);
+		for(int i=0; i<player.MaxBullets; i++)
+			if(player.bullets[i].gethp())
+				SDL_RenderTexture(renderer, player.bullets[i].sprite, NULL, &player.bullets[i].spriteRect);
 		SDL_RenderPresent(renderer);
 		SDL_Delay(40);
 	}
