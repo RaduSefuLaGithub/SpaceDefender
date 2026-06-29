@@ -26,7 +26,7 @@ void SpaceShip::die() {}
 Player::Player() {
 	spriteRect.w = 20*5;
 	spriteRect.h = 20*5;
-	sprite = IMG_LoadTexture(renderer, "Sprites/Fighter_v1.png");
+	sprite = IMG_LoadTexture(renderer, "Sprites/Player/Body.png");
 	SDL_SetTextureScaleMode(sprite, SDL_SCALEMODE_NEAREST);
 	x[0] = spriteRect.w/2; y[0] = 0;
 	x[1] = 0; y[0] = spriteRect.h-1;

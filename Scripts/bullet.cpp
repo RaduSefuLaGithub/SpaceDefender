@@ -21,7 +21,7 @@ int Bullet::gethp() { return hp; }
 void Bullet::die() {}
 
 Bullet_v1::Bullet_v1() {
-	sprite = IMG_LoadTexture(renderer, "Sprites/Bullet_v1.png");
+	sprite = IMG_LoadTexture(renderer, "Sprites/Player/Bullet.png");
 	SDL_SetTextureScaleMode(sprite, SDL_SCALEMODE_NEAREST);
 	hp = 0;
 	x[0] = 0; y[0] = 0;

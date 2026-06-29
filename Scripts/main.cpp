@@ -52,7 +52,6 @@ int main() {
 	Player player;
 	player.spawn(500, 500, 15, 100, 5);
 
-	printf("omg brudah wtfff");
 	const int W=1,A=2,S=4,D=8,SPC=16;
 	int keysPressed=0, keysCopy;
 	bool running = true;
